@@ -1,0 +1,59 @@
+name: Build & Release Plugin
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    name: Package & publish release
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write 
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read plugin version
+        id: version
+        run: |
+          VERSION=$(grep -m1 "Version:" cloudflare-tunnel-for-local-development.php \
+            | sed 's/.*Version:[[:space:]]*//')
+          echo "value=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Plugin version: $VERSION"
+
+      - name: Build zip
+        run: |
+          ZIP_NAME="cloudflare-tunnel-for-local-development.zip"
+          mkdir -p build/cloudflare-tunnel-for-local-development
+          cp cloudflare-tunnel-for-local-development.php \
+             build/cloudflare-tunnel-for-local-development/
+          # Copia eventuali asset aggiuntivi se presenti (es. /assets, /includes)
+          for dir in assets includes languages; do
+            [ -d "$dir" ] && cp -r "$dir" build/cloudflare-tunnel-for-local-development/
+          done
+          cd build
+          zip -r "../$ZIP_NAME" cloudflare-tunnel-for-local-development/
+          cd ..
+          echo "ZIP_NAME=$ZIP_NAME" >> "$GITHUB_ENV"
+
+      # Crea (o aggiorna) la release con tag v{VERSION}
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.value }}
+          name: v${{ steps.version.outputs.value }}
+          body: |
+            ## Cloudflare Tunnel for Local Development — v${{ steps.version.outputs.value }}
+
+            ### Install
+            Download `cloudflare-tunnel-for-local-development.zip` below and upload it via
+            **Plugins → Add New → Upload Plugin** in WordPress.
+
+            ### Changelog
+            See [README](https://github.com/${{ github.repository }}/blob/main/README.md) for details.
+          files: cloudflare-tunnel-for-local-development.zip
+          make_latest: true

@@ -19,7 +19,7 @@ When a request arrives from `localhost`, **nothing changes** — WordPress behav
 
 ## Requirements
 
-- WordPress 6.0+ installed and working on http://localhost or http://localhost:port
+- WordPress 6.0+ installed and working on http://localhost or http://localhost:port. See: [https://github.com/alfiosalanitri/wordpress-with-docker](https://github.com/alfiosalanitri/wordpress-with-docker)
 - PHP 8.0+
 - [Cloudflare Tunnel](https://developers.cloudflare.com/tunnel/downloads/) installed on your development machine
 
